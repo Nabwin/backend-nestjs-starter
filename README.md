@@ -1,159 +1,90 @@
-# Turborepo starter
+# Backend Starter
 
-This Turborepo starter is maintained by the Turborepo core team.
+An opinionated NestJS monorepo starter. Batteries included — auth, validation, docs, and clean tooling.
 
-## Using this example
-
-Run the following command:
+## Quick start
 
 ```sh
-npx create-turbo@latest
+bun install
+cp .env.example apps/api/.env
+bun dev
 ```
 
-## What's inside?
+That's it. Server runs on `http://localhost:3000`, Swagger at `/api-docs`.
 
-This Turborepo includes the following packages/apps:
+## What's inside
 
-### Apps and Packages
+| | |
+|---|---|
+| **Framework** | NestJS v11 |
+| **Runtime** | Bun |
+| **Build** | Turborepo |
+| **Auth** | Passport JWT (access + refresh tokens) |
+| **Validation** | Zod with ConfigService |
+| **Docs** | Swagger |
+| **Lint** | oxlint |
+| **Format** | oxfmt |
+| **Test** | Jest |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## Folder structure
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+```
+apps/
+  api/          → NestJS backend
+packages/
+  auth/         → @repo/auth (guards, strategies, decorators)
+  typescript-config/  → shared TS configs
+```
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Scripts
 
 ```sh
-cd my-turborepo
-turbo build
+bun dev         # start in watch mode
+bun build       # build all packages
+bun test        # run tests
+bun lint        # lint all packages
+bun format      # format all packages
+bun check-types # type-check all packages
 ```
 
-Without global `turbo`, use your package manager:
+## Auth
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+Bundled in `@repo/auth`:
+
+- `JwtAuthGuard` — protect routes
+- `OptionalJwtAuthGuard` — optional auth
+- `RoleGuard` + `@AllowedRoles()` — RBAC
+- `@Public()` — skip auth
+- `@GetCurrentUser()` / `@GetCurrentUserId()` — extract user from token
+
+```ts
+import { JwtAuthGuard, Public, GetCurrentUser } from "@repo/auth";
+
+@Controller("users")
+export class UsersController {
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findAll(@GetCurrentUser() user: JwtPayload) {
+    return this.usersService.findAll();
+  }
+
+  @Get("public")
+  @Public()
+  findPublic() {
+    return this.usersService.findPublic();
+  }
+}
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Env
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+Copy `.env.example` to `apps/api/.env` and tweak:
 
-```sh
-turbo build --filter=docs
+```env
+APP_ENV=development
+PORT=3000
+JWT_SECRET=<some-random-hex>
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=<some-random-hex>
+JWT_REFRESH_EXPIRES_IN=7d
 ```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)

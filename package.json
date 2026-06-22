@@ -5,13 +5,16 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "format": "turbo run format",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test"
   },
   "devDependencies": {
-    "prettier": "^3.7.4",
+    "oxc-config-fans": "^1.0.0",
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
     "turbo": "^2.9.18",
-    "typescript": "5.9.2"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18"
