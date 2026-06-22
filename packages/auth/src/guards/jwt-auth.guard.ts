@@ -1,8 +1,10 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ExecutionContext, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
+
+const ACCESS_TOKEN_EXPIRED_CODE = "ACCESS_TOKEN_EXPIRED";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {
@@ -23,6 +25,13 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
 
   handleRequest<TUser>(err: Error | null, user: TUser): TUser {
     if (err || !user) {
+      if (err && err.name === "TokenExpiredError") {
+        throw new UnauthorizedException({
+          message: "Access token expired. Please refresh.",
+          code: ACCESS_TOKEN_EXPIRED_CODE,
+          statusCode: 498,
+        });
+      }
       throw err ?? new UnauthorizedException();
     }
     return user;

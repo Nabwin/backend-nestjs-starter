@@ -1,7 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "import", "unicorn"],
-  "ignorePatterns": ["dist/**", "node_modules/**", "coverage/**", ".turbo/**"],
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "coverage/**",
+    ".turbo/**",
+    "apps/api/src/db/generated/**"
+  ],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",

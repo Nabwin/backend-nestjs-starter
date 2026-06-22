@@ -10,6 +10,8 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.15.41",
     "oxc-config-fans": "^1.0.0",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",

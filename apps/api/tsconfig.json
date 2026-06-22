@@ -4,7 +4,10 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "incremental": true,
-    "resolvePackageJsonExports": true
+    "resolvePackageJsonExports": true,
+    "paths": {
+      "src/*": ["src/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]

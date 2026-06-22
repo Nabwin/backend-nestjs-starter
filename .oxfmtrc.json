@@ -1,5 +1,11 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "sortImports": true,
-  "ignorePatterns": ["dist/**", "node_modules/**", "coverage/**", ".turbo/**"]
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "coverage/**",
+    ".turbo/**",
+    "apps/api/src/db/generated/**"
+  ]
 }
