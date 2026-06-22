@@ -5,6 +5,7 @@ import type { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import type { JwtPayload } from "../types";
+import { CookieKey } from "./cookie-key.enum";
 import type { EnvValidationType } from "./types";
 
 @Injectable()
@@ -13,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        (req: Request) => req?.cookies?.access_token ?? null,
+        (req: Request) => req?.cookies?.[CookieKey.AccessToken] ?? null,
       ]),
       ignoreExpiration: false,
       secretOrKey: config.get("JWT_SECRET"),

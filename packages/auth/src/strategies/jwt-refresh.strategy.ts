@@ -5,6 +5,7 @@ import type { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import type { JwtPayload } from "../types";
+import { CookieKey } from "./cookie-key.enum";
 import type { EnvValidationType } from "./types";
 
 @Injectable()
@@ -14,7 +15,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, "jwt-refresh"
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => (req.body as Record<string, string>)?.refreshToken ?? null,
         (req: Request) => (req.headers["x-refresh-token"] as string) ?? null,
-        (req: Request) => req?.cookies?.refresh_token ?? null,
+        (req: Request) => req?.cookies?.[CookieKey.RefreshToken] ?? null,
       ]),
       ignoreExpiration: false,
       secretOrKey: config.get("JWT_REFRESH_SECRET"),
@@ -24,7 +25,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, "jwt-refresh"
 
   validate(req: Request, payload: JwtPayload) {
     const refreshToken =
-      (req.cookies?.refresh_token as string) ??
+      (req.cookies?.[CookieKey.RefreshToken] as string) ??
       (req.headers["x-refresh-token"] as string) ??
       (req.body as Record<string, string>)?.refreshToken;
 

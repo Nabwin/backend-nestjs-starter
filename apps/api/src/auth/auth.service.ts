@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import type { Request, Response } from "express";
+import { COOKIE_MAX_AGE_MS, CookieKey, DEFAULT_COOKIE_OPTIONS } from "@repo/auth/strategies";
 import type { JwtPayload } from "@repo/auth/types";
 import type { StringValue } from "ms";
 
@@ -8,10 +10,14 @@ import type { EnvValidationType } from "../env.validation";
 
 @Injectable()
 export class AuthService {
+  private readonly cookieConfig;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: ConfigService<EnvValidationType, true>,
-  ) {}
+  ) {
+    this.cookieConfig = DEFAULT_COOKIE_OPTIONS;
+  }
 
   async signIn(
     email: string,
@@ -37,6 +43,17 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  extractRefreshToken(req: Request): string {
+    const fromCookie = req.cookies?.[CookieKey.RefreshToken] as string | undefined;
+    const fromHeader = req.headers["x-refresh-token"] as string | undefined;
+
+    const token = fromCookie ?? fromHeader;
+    if (!token) {
+      throw new UnauthorizedException("Missing refresh token");
+    }
+    return token;
   }
 
   async refreshToken(token: string): Promise<{ accessToken: string; refreshToken: string }> {
@@ -71,5 +88,31 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException("Invalid token");
     }
+  }
+
+  setAuthCookies(
+    tokens: { accessToken: string; refreshToken: string },
+    response: Response,
+  ): void {
+    const { accessToken, refreshToken } = tokens;
+    const expiry = new Date(Date.now() + COOKIE_MAX_AGE_MS);
+
+    response.cookie(CookieKey.AccessToken, accessToken, {
+      ...this.cookieConfig,
+      expires: expiry,
+    });
+    response.cookie(CookieKey.RefreshToken, refreshToken, {
+      ...this.cookieConfig,
+      path: this.cookieConfig.refreshTokenPath ?? this.cookieConfig.path,
+      expires: expiry,
+    });
+  }
+
+  clearAuthCookies(response: Response): void {
+    response.clearCookie(CookieKey.AccessToken, this.cookieConfig);
+    response.clearCookie(CookieKey.RefreshToken, {
+      ...this.cookieConfig,
+      path: this.cookieConfig.refreshTokenPath ?? this.cookieConfig.path,
+    });
   }
 }
