@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Post, Req, Res, UseGuards } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiCookieAuth,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -70,10 +71,10 @@ export class AuthController {
   @Public()
   @Post("refresh/mobile")
   @ApiOperation({ summary: "Refresh tokens via x-refresh-token header (mobile)" })
+  @ApiHeader({ name: "x-refresh-token", description: "Refresh token", required: true })
   @ApiResponse({ status: 200, description: "Returns new access and refresh tokens" })
   @ApiResponse({ status: 401, description: "Invalid refresh token" })
-  async refreshMobile(@Req() req: Request) {
-    const token = this.authService.extractRefreshToken(req);
+  async refreshMobile(@Headers("x-refresh-token") token: string) {
     return this.authService.refreshToken(token);
   }
 
